@@ -1,0 +1,39 @@
+class Game {
+	field BlockMatrix m_matrix;
+	static int Height, Width;
+	
+	constructor Game new()
+	{	
+		let Height = 32;
+		let Width = 64;
+		
+		let m_matrix = BlockMatrix.new(Height, Width);
+		do drawBorders();
+		return this;
+	}
+	
+	method void dispose()
+	{
+		do m_matrix.dispose();
+		do Memory.deAlloc(this);
+		return;
+	}
+	
+	method void drawBorders()
+	{
+		var int rowIndex, columnIndex;
+		var Block block;
+		
+		let rowIndex = 0;
+		let columnIndex = 0;
+		while (columnIndex < Width)
+		{
+			let block = m_matrix.GetBlock(rowIndex, columnIndex);
+			do block.setStateAndDraw(1);
+		}
+				
+		return;
+	}
+	
+	
+}

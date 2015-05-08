@@ -1,0 +1,92 @@
+class Block 
+{
+	/** 
+	State:	0	- Blank
+			1	- Border
+			2	- SnakeBody
+			3	- Apple
+	*/
+	field int m_state, m_row, m_column, m_x, m_y;
+	
+	constructor Block new(int row, int column)
+	{
+		let m_x = column * 8;
+		let m_y = row * 8;
+        return this;
+    }
+	
+	method void dispose()
+	{
+		do Memory.deAlloc(this);
+		return;
+	}
+	
+	method int getState()
+	{
+		return m_state;
+	}
+	
+	method void setStateAndDraw(int state)
+	{
+		do setState(state);
+		do draw();
+		return;
+	}
+	
+	method void setState(int state)
+	{
+		let m_state = state;
+		return;
+	}
+	
+	method void draw()
+	{
+		if ( m_state = 0 )
+		{
+			do drawBlank();
+			return;
+		}
+		if ( m_state = 1 )
+		{
+			do drawBorder();
+			return;
+		}
+		if ( m_state = 2 )
+		{
+			do drawSnakeBody();
+			return;
+		}
+		
+		// ( m_state = 3 )
+		do drawApple();
+		return;
+	}
+	
+	method void drawBlank()
+	{
+		do Screen.setColor(false);
+        do Screen.drawRectangle(m_x, m_y, m_x + 8, m_y + 8);
+		return;
+	}
+	
+	method void drawBorder()
+	{
+		do Screen.setColor(true);
+        do Screen.drawRectangle(m_x + 1, m_y + 1, m_x + 6, m_y + 6);
+		return;
+	}
+	
+	method void drawSnakeBody()
+	{
+		do Screen.setColor(true);
+        do Screen.drawRectangle(m_x, m_y, m_x + 8, m_y + 8);
+		return;
+	}
+	
+	method void drawApple()
+	{
+		do Screen.setColor(true);
+		do Screen.drawCircle(m_x + 4, m_y + 4, 3);
+		return;
+	}
+}
