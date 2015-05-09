@@ -2,9 +2,12 @@ class Main
 {
     function void main() {
         var Game game;
-
-        let game = Game.new();
-        do game.dispose();
+		var Block block;
+		var BlockMatrix matrix;
+				
+        let game = Game.new(20, 200, 12345);
+		do game.run();
+		do game.dispose();
 
         return;
     }

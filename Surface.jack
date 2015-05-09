@@ -1,0 +1,87 @@
+class Surface 
+{
+	/** A matrix of blocks. */
+	
+	field Array m_rows;
+	field int m_numOfRows, m_numOfColumns;
+	
+	constructor Surface new(int numOfRows, int numOfColumns, int blockLength)
+	{	
+		var int rowIndex, columnIndex;
+		var Array row;
+		
+		let m_numOfRows = numOfRows;
+		let m_numOfColumns = numOfColumns;
+
+		// Rows
+		let m_rows = Array.new(m_numOfRows);
+		
+		// Columns
+		let rowIndex = 0;
+		while (rowIndex < m_numOfRows) {
+			let m_rows[rowIndex] = Array.new(m_numOfColumns);
+			let rowIndex = rowIndex +1;
+		}
+		
+		// Blocks
+		let rowIndex = 0;
+		while (rowIndex < m_numOfRows) {
+			let row = m_rows[rowIndex];
+			let columnIndex = 0;
+			while (columnIndex < m_numOfColumns)
+			{
+				let row[columnIndex] = Block.new(rowIndex, columnIndex, blockLength);
+				let columnIndex = columnIndex + 1;
+			}
+			let rowIndex = rowIndex + 1;
+		}
+		
+		return this;
+	}
+	
+	method void dispose() 
+	{
+		var int rowIndex, columnIndex;
+		var Array row;
+		var Block block;
+		
+		// Blocks
+		let rowIndex = 0;
+		while (rowIndex < m_numOfRows) {
+			let row = m_rows[rowIndex];
+			let columnIndex = 0;
+			while (columnIndex < m_numOfColumns)
+			{
+				let block = row[columnIndex];
+				do block.dispose();
+				let columnIndex = columnIndex + 1;
+			}
+			let rowIndex = rowIndex + 1;
+		}
+		
+		// Columns
+		let rowIndex = 0;
+		while (rowIndex < m_numOfRows) 
+		{
+			let row = m_rows[rowIndex];
+			do row.dispose();
+			let rowIndex = rowIndex +1;
+		}
+		
+		// Rows
+		do m_rows.dispose();
+		
+        do Memory.deAlloc(this);
+        return;
+    }
+	
+	method Block getBlock(int rowIndex, int columnIndex)
+	{
+		var Array row;
+		var Block block;
+		
+		let row = m_rows[rowIndex];
+		let block = row[columnIndex];
+		return block;
+	}
+}

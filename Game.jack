@@ -1,39 +1,193 @@
-class Game {
-	field BlockMatrix m_matrix;
-	static int Height, Width;
+class Game 
+{
+	/** A single game. */
 	
-	constructor Game new()
-	{	
-		let Height = 32;
-		let Width = 64;
+	field Surface m_surface;
+	field int m_numOfRows, m_numOfColumns, m_remainingEmptyBlocks;
+	field Snake m_snake;
+	
+	constructor Game new(int blockLength, int delayMs, int appleSeed)
+	{
+		/**
+			blockLength - the size of a surface block
+			delayMs - the delay between advancements of the snake
+			appleSeed - the seed for the PRG which allows the generation
+						of apples at random locations.
+		*/
+
+		let m_numOfRows = 256 / blockLength;
+		let m_numOfColumns = 512 / blockLength;
 		
-		let m_matrix = BlockMatrix.new(Height, Width);
+		do LCGRandom.setSeed(appleSeed);
+		
+		let m_surface = Surface.new(m_numOfRows, m_numOfColumns, blockLength);
 		do drawBorders();
+		
+		do initSnake(delayMs);
+		let m_remainingEmptyBlocks = ((m_numOfRows - 2) * (m_numOfColumns - 2)) - 1;
+		do generateApple();
+		
 		return this;
 	}
 	
 	method void dispose()
 	{
-		do m_matrix.dispose();
+		do m_surface.dispose();
+		do m_snake.dispose();
 		do Memory.deAlloc(this);
+		return;
+	}
+	
+	method void run() 
+	{
+		// Runs the game logic loop.
+		
+        var char key;
+        var boolean exit;
+		var int direction, result;
+				
+        let exit = false;
+
+        while (~exit) {
+            let key = Keyboard.keyPressed();
+			
+			if(~(key = 0))
+			{
+				if (key = 81) { 		// q
+					let exit = true;
+				}
+				if (key = 131) {
+					let direction = 1; 	// up
+				}
+				if (key = 133) {
+					let direction = 2; 	// down
+				}
+				if (key = 130) {
+					let direction = 3; 	// left
+				}
+				if (key = 132) {
+					let direction = 4; 	// right
+				}
+
+				do m_snake.setDirection(direction);
+			}
+            
+			let result = m_snake.advance();
+			if (result = 1)
+			{
+				let m_remainingEmptyBlocks = m_remainingEmptyBlocks - 1;
+				
+				if (m_remainingEmptyBlocks = 0)
+				{
+					let exit = true;
+				}
+				else
+				{
+					do generateApple();
+				}
+			}
+			if (result = 2)
+			{
+				let exit = true;
+			}
+        }
+            
+        return;
+	}
+	
+	method void generateApple()
+	{
+		var int row, column, emptyBlockCount, randLocation, state;
+		var Block block;
+		
+		let randLocation = LCGRandom.randRange(0, m_remainingEmptyBlocks);
+		let emptyBlockCount = 0;
+		
+		let row = 1;
+		while (row < (m_numOfRows - 1))
+		{
+			let column = 1;
+			while (column < (m_numOfColumns - 1))
+			{
+				let block = m_surface.getBlock(row, column);
+				let state = block.getState();
+				
+				if (state = 0)
+				{
+					if (emptyBlockCount = randLocation)
+					{
+						do block.setStateAndDraw(3);
+						return;
+					}
+					let emptyBlockCount = emptyBlockCount + 1;
+				}
+				let column = column + 1;
+			}
+			let row = row + 1;
+		}
+		do Sys.error(100);
+		return;
+	}
+	
+	method void initSnake(int delayMs)
+	{
+		var Block headBlock;
+		
+		let headBlock = m_surface.getBlock(1,1);
+		let m_snake = Snake.new(headBlock, m_surface, delayMs);
+
 		return;
 	}
 	
 	method void drawBorders()
 	{
-		var int rowIndex, columnIndex;
-		var Block block;
-		
-		let rowIndex = 0;
-		let columnIndex = 0;
-		while (columnIndex < Width)
-		{
-			let block = m_matrix.GetBlock(rowIndex, columnIndex);
-			do block.setStateAndDraw(1);
-		}
-				
+		do drawTopAndBottomBorders();
+		do drawLeftAndRightBorders();
 		return;
 	}
 	
+	method void drawTopAndBottomBorders()
+	{
+		var int columnIndex;
+		var Block block;
+
+		let columnIndex = 0;
+		while (columnIndex < m_numOfColumns)
+		{
+			// Top
+			let block = m_surface.getBlock(0, columnIndex);
+			do block.setStateAndDraw(1);
+			// Bottom
+			let block = m_surface.getBlock(m_numOfRows - 1, columnIndex);
+			do block.setStateAndDraw(1);
+			
+			let columnIndex = columnIndex + 1;
+		}
+		return;
+	}
+	
+	method void drawLeftAndRightBorders()
+	{
+		var int rowIndex;
+		var Block block;
+		
+		let rowIndex = 1;
+		
+		let block = m_surface.getBlock(rowIndex, 0);
+		do block.setStateAndDraw(1);
+			
+		while (rowIndex < (m_numOfRows - 1))
+		{
+			// Left
+			let block = m_surface.getBlock(rowIndex, 0);
+			do block.setStateAndDraw(1);
+			// Right
+			let block = m_surface.getBlock(rowIndex, m_numOfColumns - 1);
+			do block.setStateAndDraw(1);
+			
+			let rowIndex = rowIndex + 1;
+		}
+		return;
+	}
 	
 }

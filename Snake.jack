@@ -1,0 +1,145 @@
+class Snake
+{
+	/** Represents the snake. */
+	
+	field BlockNode m_headNode, m_tailNode;
+	field int m_direction, m_delayMs;
+	field Surface m_surface;
+	
+	constructor Snake new (Block startBlock, Surface surface, int delayMs)
+	{
+		/**
+			startBlock - the block in which the snake is positioned in the start.
+			surface - the surface on which the snake is positioned.
+			delayMs - the delay between steps.
+		*/
+		var BlockNode node;
+		
+		let m_surface = surface;
+		
+		let node = BlockNode.new(startBlock);
+		let m_headNode = node;
+		let m_tailNode = node;
+		let m_direction = 4;
+		let m_delayMs = delayMs;
+		
+		do startBlock.setStateAndDraw(2);
+		
+		return this;
+	}
+	
+	method int advance()
+	{
+		/** 
+			Returns:
+				0 - Advanced
+				1 - Ate an apple
+				2 - Got killed
+		*/
+		var int row, column, state;
+		var Block block;
+				
+		let block = m_headNode.getBlock();
+		let row = block.getRow();
+		let column = block.getColumn();
+		
+		// Calculating destination
+		if (m_direction = 1) { 				// Down
+            let row = row - 1;
+        }
+		else {
+			if (m_direction = 2) { 			// Up
+				let row = row + 1;
+			}
+			else {
+				if (m_direction = 3) { 		// Left
+					let column = column - 1;
+				}
+				else { // (m_direction = 4) // Right
+					let column = column + 1;
+				}
+			}
+		}
+        let block = m_surface.getBlock(row, column);
+		
+		let state = block.getState();
+		if (state = 0) // Blank
+		{
+			do insertNewHead(block);
+			do removeTailEdge();
+			do Sys.wait(m_delayMs);
+			return 0;
+		}
+		else {
+			if (state = 3) // Apple
+			{
+				do insertNewHead(block);
+				do Sys.wait(m_delayMs);
+				return 1;
+			}
+			else // Border or body
+			{
+				return 2;
+			}
+		}
+	}
+	
+	method void setDirection(int direction)
+	{
+		if (m_direction = direction)
+		{
+			return;
+		}
+		if (((m_direction = 1) & (direction = 2)) | 
+			((m_direction = 2) & (direction = 1)))
+		{
+			return;
+		}
+		
+		if (((m_direction = 3) & (direction = 4)) | 
+			((m_direction = 4) & (direction = 3)))
+		{
+			return;
+		}
+		
+		let m_direction = direction;
+		return;
+	}
+	
+	method void insertNewHead(Block headBlock)
+	{		
+		var BlockNode newHeadNode;
+		
+		do headBlock.setStateAndDraw(2);
+		
+		let newHeadNode = BlockNode.new(headBlock);
+		do newHeadNode.setNext(m_headNode);
+		do m_headNode.setPrev(newHeadNode);
+		let m_headNode = newHeadNode;
+		
+		return;
+	}
+	
+	method void removeTailEdge()
+	{
+		var BlockNode newTailNode;
+		var Block tailBlock;
+		
+		let tailBlock = m_tailNode.getBlock();
+		do tailBlock.setStateAndDraw(0);
+		
+		let newTailNode = m_tailNode.getPrev();
+		do newTailNode.setNext(null);
+		do m_tailNode.dispose();
+		let m_tailNode = newTailNode;
+		
+		return;
+	}
+		
+	method void dispose()
+	{
+		do m_headNode.dispose();
+		do Memory.deAlloc(this);
+		return;
+	}
+}

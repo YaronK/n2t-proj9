@@ -1,17 +1,25 @@
 class Block 
 {
-	/** 
+	/**
+	Represents a block.
 	State:	0	- Blank
 			1	- Border
 			2	- SnakeBody
 			3	- Apple
 	*/
-	field int m_state, m_row, m_column, m_x, m_y;
+	field int m_state, m_row, m_column, m_x, m_y, m_length;
 	
-	constructor Block new(int row, int column)
+	constructor Block new(int row, int column, int length)
 	{
-		let m_x = column * 8;
-		let m_y = row * 8;
+		/** Initializes a new block with position (row, column) and length. */
+		let m_row = row;
+		let m_column = column;
+		let m_length = length;
+		let m_state = 0;
+
+		let m_x = column * length;
+		let m_y = row * length;
+		
         return this;
     }
 	
@@ -19,6 +27,16 @@ class Block
 	{
 		do Memory.deAlloc(this);
 		return;
+	}
+	
+	method int getRow()
+	{
+		return m_row;
+	}
+	
+	method int getColumn()
+	{
+		return m_column;
 	}
 	
 	method int getState()
@@ -41,6 +59,7 @@ class Block
 	
 	method void draw()
 	{
+		/** Draws the block, given its state. */
 		if ( m_state = 0 )
 		{
 			do drawBlank();
@@ -65,28 +84,28 @@ class Block
 	method void drawBlank()
 	{
 		do Screen.setColor(false);
-        do Screen.drawRectangle(m_x, m_y, m_x + 8, m_y + 8);
+        do Screen.drawRectangle(m_x, m_y, m_x + m_length - 1, m_y + m_length - 1);
 		return;
 	}
 	
 	method void drawBorder()
 	{
 		do Screen.setColor(true);
-        do Screen.drawRectangle(m_x + 1, m_y + 1, m_x + 6, m_y + 6);
+        do Screen.drawRectangle(m_x + 1, m_y + 1, m_x + m_length - 1, m_y + m_length - 1);
 		return;
 	}
 	
 	method void drawSnakeBody()
 	{
 		do Screen.setColor(true);
-        do Screen.drawRectangle(m_x, m_y, m_x + 8, m_y + 8);
+		do Screen.drawCircle(m_x + (m_length / 2), m_y + (m_length / 2), (m_length / 2) - 1);
 		return;
 	}
 	
 	method void drawApple()
 	{
 		do Screen.setColor(true);
-		do Screen.drawCircle(m_x + 4, m_y + 4, 3);
+		do Screen.drawCircle(m_x + (m_length / 2), m_y + (m_length / 2), (m_length / 3));
 		return;
 	}
 }

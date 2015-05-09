@@ -1,0 +1,52 @@
+class BlockNode
+{
+	/** A node for the doubly-linked list. */
+	
+	field Block m_block;
+	field BlockNode m_next, m_prev;
+	
+	constructor BlockNode new (Block block)
+	{
+		let m_block = block;
+		let m_next = null;
+		let m_prev = null;
+		return this;
+	}
+	
+	method void dispose()
+	{
+		if(~(m_next = null))
+		{
+			do m_next.dispose();		
+		}
+		do Memory.deAlloc(this);
+		return;
+	}
+	
+	method BlockNode getNext()
+	{
+		return m_next;
+	}
+	
+	method void setNext(BlockNode next)
+	{
+		let m_next = next;
+		return;
+	}
+	
+	method BlockNode getPrev()
+	{
+		return m_prev;
+	}
+	
+	method void setPrev(BlockNode prev)
+	{
+		let m_prev = prev;
+		return;
+	}
+	
+	method Block getBlock()
+	{
+		return m_block;
+	}
+}
